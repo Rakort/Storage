@@ -8,13 +8,14 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Storage</RootNamespace>
     <AssemblyName>Storage</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -39,7 +40,17 @@
     <ApplicationIcon>001-buildings-1.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject, Version=3.3.4.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.3.3.4\lib\net45\Ninject.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -59,13 +70,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\Converters.cs" />
-    <Compile Include="Model\Sql.cs" />
-    <Compile Include="Model\Tables.cs" />
     <Compile Include="Properties\Annotations.cs" />
-    <Compile Include="SQLite.cs" />
-    <Compile Include="SQLiteAsync.cs" />
+    <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\NewWriteoffViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="ViewModel\WriteoffViewModel.cs" />
     <Compile Include="ViewModel\ComingViewModel.cs" />
     <Compile Include="ViewModel\NewComingViewModel.cs" />
@@ -73,9 +81,6 @@
     <Compile Include="ViewModel\StorageViewModel.cs" />
     <Compile Include="View\AddedView.xaml.cs">
       <DependentUpon>AddedView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\InfoView.xaml.cs">
-      <DependentUpon>InfoView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\NewWriteoffView.xaml.cs">
       <DependentUpon>NewWriteoffView.xaml</DependentUpon>
@@ -95,10 +100,6 @@
     <Page Include="View\AddedView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\InfoView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\NewWriteoffView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -174,6 +175,30 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="001-buildings-1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BuissnesLayer\BuissnesLayer.csproj">
+      <Project>{05BAE879-112C-4773-A875-172F34411AF9}</Project>
+      <Name>BuissnesLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataLayer\DataLayer.csproj">
+      <Project>{C1A9CA71-BD2C-4FE9-9A3A-AF91294A9DFA}</Project>
+      <Name>DataLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PresentationLayer\PresentationLayer.csproj">
+      <Project>{64b7b1b8-7158-466b-bf8d-c87be8b7c689}</Project>
+      <Name>PresentationLayer</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\first.png" />
+    <Resource Include="Assets\last.png" />
+    <Resource Include="Assets\next.png" />
+    <Resource Include="Assets\prev.png" />
+    <Resource Include="Assets\refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Model\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

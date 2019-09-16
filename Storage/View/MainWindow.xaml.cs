@@ -11,7 +11,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Storage.Model;
 using Storage.ViewModel;
 using Table = System.Windows.Documents.Table;
 
@@ -26,10 +25,6 @@ namespace Storage
         public MainWindow()
         {
             InitializeComponent();
-            Sql.CreateTable();
-            ShowWin.mainWindow = this;
-            
-            ShowWin.ShowStorage();
         }
         public void ShowUserControl(UserControl newUserControl)
         {
@@ -42,27 +37,7 @@ namespace Storage
 
             StackPanel.Children.Add(_userControl);
         }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            ShowWin.ShowStorage();
-        }
-
-        private void Button_Click_2(object sender, RoutedEventArgs e)
-        {
-            ShowWin.ShowComing();
-        }
-
-        private void Button_Click_3(object sender, RoutedEventArgs e)
-        {
-            ShowWin.ShowWriteoff();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            ShowWin.ShowInfo();
-        }
-
+        
         public void ShowAddedWindow(UserControl addedWin)
         {
             MainGrid.Children.Remove(_addedWindow);

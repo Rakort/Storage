@@ -4,14 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Storage.View"
-             xmlns:viewModel="clr-namespace:Storage.ViewModel" xmlns:model="clr-namespace:Storage.Model"
+             xmlns:viewModel="clr-namespace:Storage.ViewModel" 
     xmlns:commands="clr-namespace:Storage.Commands"
     x:Class="Storage.View.NewWriteoffView"
              mc:Ignorable="d" 
               d:DesignWidth="300">
-    <UserControl.Resources>
-        <model:IdToProductConverter x:Key="IdToProductConverter"/>
-    </UserControl.Resources>
     <UserControl.DataContext>
         <viewModel:NewWriteoffViewModel/>
     </UserControl.DataContext>
@@ -35,9 +32,9 @@
         <TextBox Text="{Binding Writeoff.Comment}" TextWrapping="Wrap"/>
 
         <Button Content="+ Добавить товар" Command="{Binding AddProduct}" Margin ="0,10"/>
-        <DataGrid x:Name="dataGrid1" ItemsSource="{Binding ProductCount}" HorizontalAlignment="Stretch" Margin="10,0,10,10" VerticalAlignment="Top"  AutoGenerateColumns="False" HorizontalGridLinesBrush="#FFC9C9C9" VerticalGridLinesBrush="#FFC9C9C9" SelectionMode="Single"  CanUserAddRows="False"  >
+        <DataGrid x:Name="dataGrid1" ItemsSource="{Binding ProductCounts}" HorizontalAlignment="Stretch" Margin="10,0,10,10" VerticalAlignment="Top"  AutoGenerateColumns="False" HorizontalGridLinesBrush="#FFC9C9C9" VerticalGridLinesBrush="#FFC9C9C9" SelectionMode="Single"  CanUserAddRows="False"  >
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding IdProduct, Converter={StaticResource IdToProductConverter}}" ClipboardContentBinding="{x:Null}" Header="Товар" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Product.ProductName}" ClipboardContentBinding="{x:Null}" Header="Товар" IsReadOnly="True"/>
                 <DataGridTextColumn Binding="{Binding Count}" ClipboardContentBinding="{x:Null}" Header="Количество" />
             </DataGrid.Columns>
         </DataGrid>

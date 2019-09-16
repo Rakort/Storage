@@ -10,103 +10,76 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using PresentationLayer;
+using PresentationLayer.Models;
 using Storage.Annotations;
 using Storage.Commands;
-using Storage.Model;
+
 
 namespace Storage.ViewModel
 {
-    public sealed class NewWriteoffViewModel : DependencyObject, INotifyPropertyChanged
+    public sealed class NewWriteoffViewModel : ViewModelBase
     {
-        public CollectionView StorageEntries { get; set; }
-        public ObservableCollection<WriteoffProduct> ProductCount { get; set; }
-        public ICommand AddProduct { get; set; }
-        public Writeoff Writeoff { get; set; }
-        public ICommand Save { get; set; }
-        public ICommand Cancel { get; set; }
+        #region Fields
+        private ServicesManager _services;
+        public WriteoffModelEdit Writeoff { get; set; }
+        public ProductCountModel ProductCount { get; set; }
 
-        public bool Show { get; set; }
+        public CollectionView StorageEntries => new CollectionView( _services == null? new List<ProductModel>() : _services.Products.GetAll(Availability.Available));
+        public ObservableCollection<ProductCountModel> ProductCounts
+        {
+            get =>
+                new ObservableCollection<ProductCountModel>(
+                    Writeoff != null ? Writeoff.ProductCounts : new List<ProductCountModel>());
+            set => Writeoff.ProductCounts = value.ToList();
+        }
+
+        #endregion
+
+        #region Commands
+
+        public ICommand AddProduct => new SimpleCommand(() =>
+        {
+            //if (ProductCount.Count <= 0 || ProductCount.Product == null) return;
+            //if (Writeoff.ProductCounts.Select(s => s.Product.Id).Contains(ProductCount.Product.Id)) return;
+            Writeoff.ProductCounts.Add(new ProductCountModel()
+            {
+                Count = 1,
+                Product = StorageEntries.CurrentItem as ProductModel
+            });
+            OnPropertyChanged(nameof(ProductCounts));
+        });
+
+        public ICommand Save => new SimpleCommand(() =>
+        {
+            _services.Writeoffs.Save(Writeoff);
+            ShowWin.Back();
+        });
+        public ICommand Cancel => new SimpleCommand(ShowWin.Back);
+
+        #endregion
+        
+        private void Init(ServicesManager services)
+        {
+            _services = services;
+            ProductCount = new ProductCountModel();
+            
+        }
 
         public NewWriteoffViewModel()
         {
         }
-
-        public NewWriteoffViewModel(Writeoff writeoff = null)
+        
+        public NewWriteoffViewModel(ServicesManager services)
         {
-            Show = false;
-            Writeoff = new Writeoff();
-            ProductCount = new ObservableCollection<WriteoffProduct>();
-            StorageEntries = new CollectionView(Sql.GetTable<Product>().Where(w => w.Count > 0));
-
-            AddProduct = new SimpleCommand(() =>
-            {
-                var id = (StorageEntries.CurrentItem as Product).IdProduct;
-                if (ProductCount.Count(w => w.IdProduct == id) == 0)
-                    ProductCount.Add(new WriteoffProduct() {IdProduct = id, Count = 1});
-            });
-
-            Cancel = new SimpleCommand(ShowWin.ShowWriteoff);
-
-            if (writeoff == null)
-                Save = new SimpleCommand(() =>
-                {
-                    Writeoff.Date = DateTime.Now;
-                    Sql.Add(Writeoff);
-                    int id = Sql.GetTable<Writeoff>().OrderByDescending(o => o.IdWriteoff).First().IdWriteoff;
-                    foreach (var product in ProductCount)
-                    {
-                        product.IdWriteoff = id;
-                        Sql.Add(product);
-                        var prod = Sql.GetTable<Product>()
-                            .First(f => f.IdProduct == product.IdProduct);
-                        prod.Count -= product.Count;
-                        Sql.Update(prod);
-                    }
-                    ShowWin.ShowWriteoff();
-                });
-            else
-            {
-                Writeoff = writeoff;
-                ProductCount = new ObservableCollection<WriteoffProduct>(Sql.GetTable<WriteoffProduct>()
-                    .Where(w => w.IdWriteoff == writeoff.IdWriteoff));
-                OnPropertyChanged(nameof(ProductCount));
-                Save = new SimpleCommand(() =>
-                {
-                    Sql.Update(Writeoff);
-
-                    Sql.GetTable<WriteoffProduct>()
-                        .Where(w => w.IdWriteoff == writeoff.IdWriteoff)
-                        .ToList()
-                        .ForEach(d =>
-                        {
-                            var prod = Sql.GetTable<Product>()
-                                .First(f => f.IdProduct == d.IdProduct);
-                            prod.Count += d.Count;
-                            Sql.Update(prod);
-                            Sql.Delete(d);
-                        });
-
-                    foreach (var product in ProductCount)
-                    {
-                        product.IdWriteoff = writeoff.IdWriteoff;
-                        Sql.Add(product);
-                        var prod = Sql.GetTable<Product>()
-                            .First(f => f.IdProduct == product.IdProduct);
-                        prod.Count -= product.Count;
-                        Sql.Update(prod);
-                    }
-                    ShowWin.ShowWriteoff();
-                });
-            }
-
+            Init(services);
+            Writeoff = new WriteoffModelEdit {Date = DateTime.Now};
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public NewWriteoffViewModel(ServicesManager services, int writeoffId)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            Init(services);
+            Writeoff = services.Writeoffs.GetWriteoff(writeoffId);
         }
     }
 }

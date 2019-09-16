@@ -1,55 +1,89 @@
 ﻿using Storage.Commands;
-using Storage.Model;
 using Storage.View;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using PresentationLayer;
+using PresentationLayer.Models;
+using BuissnesLayer;
+using DataLayer;
 
 namespace Storage.ViewModel
 {
     public static class ShowWin
     {
         public static MainWindow mainWindow;
+        private static readonly ServicesManager Services = new ServicesManager(new DataManager(new EFDBContext()));
+        private static Stack<UserControl> userControls = new Stack<UserControl>();
+        private static UserControl _currentControl;
+
+        private static void ShowUserControl(UserControl uc)
+        {
+            userControls.Push(_currentControl);
+            _currentControl = uc;
+            mainWindow.ShowUserControl(uc);
+        }
+
+        private static void ShowHeadUserControl(UserControl uc)
+        {
+            userControls.Clear();
+            _currentControl = uc;
+            mainWindow.ShowUserControl(uc);
+        }
+
+        public static void Back()
+        {
+            if (IsBack) mainWindow.ShowUserControl(userControls.Pop());
+        }
+
+        public static bool IsBack => userControls.Count > 0;
 
         #region Окна
 
-        public static void ShowStorage()
+        public static void ShowMain()
         {
-            mainWindow.ShowUserControl(new StorageView() {DataContext = new StorageViewModel()});
+            mainWindow = new MainWindow(){DataContext = new MainViewModel()};
+            mainWindow.Show();
+            ShowStorage();
         }
 
-        public static void ShowNewComing(Coming coming = null)
+        public static void ShowStorage()
         {
-            mainWindow.ShowUserControl(new NewComingView() {DataContext = new NewComingViewModel(coming)});
+            ShowHeadUserControl(new StorageView() {DataContext = new StorageViewModel(Services)});
+        }
+
+        public static void ShowNewComing(ComingModelView coming)
+        {
+            ShowUserControl(new NewComingView() { DataContext = new NewComingViewModel(Services, coming.Id) });
+        }
+        public static void ShowAddComing()
+        {
+            ShowUserControl(new NewComingView() { DataContext = new NewComingViewModel(Services) });
         }
 
         public static void ShowComing()
         {
-            mainWindow.ShowUserControl(new ComingView() {DataContext = new ComingViewModel()});
+            ShowHeadUserControl(new ComingView() {DataContext = new ComingViewModel(Services) });
         }
 
         public static void ShowWriteoff()
         {
-            mainWindow.ShowUserControl(new WriteoffView() {DataContext = new WriteoffViewModel()});
+            ShowHeadUserControl(new WriteoffView() {DataContext = new WriteoffViewModel(Services)});
         }
 
-        public static void ShowNewWriteoff(Writeoff writeoff = null)
+        public static void ShowNewWriteoff(WriteoffModelView writeoff = null)
         {
-            mainWindow.ShowUserControl(new NewWriteoffView() {DataContext = new NewWriteoffViewModel(writeoff)});
+            var vm = writeoff == null ? new NewWriteoffViewModel(Services) : new NewWriteoffViewModel(Services, writeoff.Id);
+            ShowUserControl(new NewWriteoffView() { DataContext = vm });
         }
 
         #endregion
 
         #region Донолнительные Окна
-
-        public static void ShowInfo()
-        {
-            mainWindow.ShowAddedWindow(new InfoView());
-        }
-
-        public static AddedView AddedProduct(Product product = null, ICommand sumbit = null)
+        
+        public static AddedView AddedProduct(ProductModel product = null, ICommand sumbit = null)
         {
             var tbName = new TextBox() {Margin = new Thickness(10, 0, 10, 10)};
             var lblNameE = new Label()
@@ -88,32 +122,6 @@ namespace Storage.ViewModel
             if (product == null)
             {
                 tbMinCount.Text = "0";
-                a.Submit = new SimpleCommand(() =>
-                {
-                    if (string.IsNullOrEmpty(tbName.Text.Trim()))
-                    {
-                        lblNameE.Visibility = Visibility.Visible;
-                        return;
-                    }
-                    int res;
-                    if (!int.TryParse(tbMinCount.Text.Trim(), out res))
-                    {
-                        lblMinCountE.Visibility = Visibility.Visible;
-                        return;
-                    }
-                    Sql.Add(new Product()
-                    {
-                        ProductName = tbName.Text,
-                        Description = tbDescription.Text,
-                        Code = tbCode.Text,
-                        Article = tbArticle.Text,
-                        MinCount = int.Parse(tbMinCount.Text),
-                        Count = 0
-                    });
-                    sumbit?.Execute(null);
-                    a.Close();
-                });
-
             }
             else
             {
@@ -122,40 +130,40 @@ namespace Storage.ViewModel
                 tbCode.Text = product.Code;
                 tbArticle.Text = product.Article;
                 tbMinCount.Text = product.MinCount.ToString();
-                a.Submit = new SimpleCommand(() =>
-                {
-                    if (string.IsNullOrEmpty(tbName.Text.Trim()))
-                    {
-                        lblNameE.Visibility = Visibility.Visible;
-                        return;
-                    }
-                    int res;
-                    if (!int.TryParse(tbMinCount.Text.Trim(), out res))
-                    {
-                        lblMinCountE.Visibility = Visibility.Visible;
-                        return;
-                    }
-                    Sql.Update(new Product()
-                    {
-                        IdProduct = product.IdProduct,
-                        ProductName = tbName.Text,
-                        Description = tbDescription.Text,
-                        Code = tbCode.Text,
-                        Article = tbArticle.Text,
-                        MinCount = int.Parse(tbMinCount.Text),
-                        Count = product.Count
-                    });
-                    sumbit?.Execute(null);
-                    a.Close();
-                });
             }
+
+            a.Submit = new SimpleCommand(() =>
+            {
+                if (string.IsNullOrEmpty(tbName.Text.Trim()))
+                {
+                    lblNameE.Visibility = Visibility.Visible;
+                    return;
+                }
+                int res;
+                if (!int.TryParse(tbMinCount.Text.Trim(), out res))
+                {
+                    lblMinCountE.Visibility = Visibility.Visible;
+                    return;
+                }
+                Services.Products.Save(new ProductModel()
+                {
+                    ProductName = tbName.Text,
+                    Description = tbDescription.Text,
+                    Code = tbCode.Text,
+                    Article = tbArticle.Text,
+                    MinCount = int.Parse(tbMinCount.Text),
+                    Count = 0
+                });
+                sumbit?.Execute(null);
+                a.Close();
+            });
 
             a.Init();
             mainWindow.ShowAddedWindow(a);
             return a;
         }
 
-        public static AddedView AddedProvider(Provider provider = null, ICommand sumbit = null)
+        public static AddedView AddedProvider(ProviderModel provider = null, ICommand sumbit = null)
         {
             var tbName = new TextBox() {Margin = new Thickness(10, 0, 10, 10)};
             var lblNameE = new Label()
@@ -185,54 +193,33 @@ namespace Storage.ViewModel
                     tbNote
                 }
             };
-            if (provider == null)
-            {
-                a.Submit = new SimpleCommand(() =>
-                {
-                    if (string.IsNullOrEmpty(tbName.Text.Trim()))
-                    {
-                        lblNameE.Visibility = Visibility.Visible;
-                        return;
-                    }
-                    Sql.Add(new Provider()
-                    {
-                        Name = tbName.Text,
-                        Address = tbAddress.Text,
-                        Email = tbEmail.Text,
-                        Phone = tbPhone.Text,
-                        Note = tbNote.Text
-                    });
-                    sumbit?.Execute(null);
-                    a.Close();
-                });
-            }
-            else
+            if (provider != null)
             {
                 tbName.Text = provider.Name;
                 tbAddress.Text = provider.Address;
                 tbEmail.Text = provider.Email;
                 tbPhone.Text = provider.Phone;
                 tbNote.Text = provider.Note;
-                a.Submit = new SimpleCommand(() =>
-                {
-                    if (string.IsNullOrEmpty(tbName.Text.Trim()))
-                    {
-                        lblNameE.Visibility = Visibility.Visible;
-                        return;
-                    }
-                    Sql.Update(new Provider()
-                    {
-                        IdProvider = provider.IdProvider,
-                        Name = tbName.Text,
-                        Address = tbAddress.Text,
-                        Email = tbEmail.Text,
-                        Phone = tbPhone.Text,
-                        Note = tbNote.Text
-                    });
-                    sumbit?.Execute(null);
-                    a.Close();
-                });
             }
+
+            a.Submit = new SimpleCommand(() =>
+            {
+                if (string.IsNullOrEmpty(tbName.Text.Trim()))
+                {
+                    lblNameE.Visibility = Visibility.Visible;
+                    return;
+                }
+                Services.Providers.Save(new ProviderModel()
+                {
+                    Name = tbName.Text,
+                    Address = tbAddress.Text,
+                    Email = tbEmail.Text,
+                    Phone = tbPhone.Text,
+                    Note = tbNote.Text
+                });
+                sumbit?.Execute(null);
+                a.Close();
+            });
 
             a.Init();
             mainWindow.ShowAddedWindow(a);

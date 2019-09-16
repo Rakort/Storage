@@ -8,20 +8,22 @@ namespace Storage.Commands
     {
         public Boolean CommandSucceeded { get; set; }
 
-        public Predicate<object> CanExecuteDelegate { get; set; }
+        public Func<object, bool> CanExecuteDelegate { get; set; }
 
         public Action<object> ExecuteDelegate { get; set; }
 
         public bool IsExecute { get; set; }
 
-        public SimpleCommand(Action p_action)
+        public SimpleCommand(Action p_action, Func<object, bool> canExecute = null)
         {
             ExecuteDelegate = o => p_action();
+            CanExecuteDelegate = canExecute;
             IsExecute = true;
         }
-        public SimpleCommand(Action<object> p_action)
+        public SimpleCommand(Action<object> p_action, Func<object, bool> canExecute = null)
         {
             ExecuteDelegate = p_action;
+            CanExecuteDelegate = canExecute;
             IsExecute = true;
         }
 

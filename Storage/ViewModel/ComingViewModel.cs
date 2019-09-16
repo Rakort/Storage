@@ -1,48 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using PresentationLayer;
+using PresentationLayer.Models;
 using Storage.Commands;
-using Storage.Model;
+
 
 namespace Storage.ViewModel
 {
-    public class ComingViewModel : DependencyObject
+    public class ComingViewModel : ViewModelPage
     {
-        public ICommand NewComing { get; set; }
-        public ICommand ApplyFilter { get; set; }
+        public override ICommand Refresh => new SimpleCommand(() => OnPropertyChanged(nameof(ComingEntries)));
+
+        public ICommand NewComing => new SimpleCommand((item) =>
+        {
+            if (item is ComingModelView coming)
+                ShowWin.ShowNewComing(coming);
+            else
+                ShowWin.ShowAddComing();
+        });
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public CollectionView ComingEntries { get; set; }
-        public ComingViewModel()
+        public ObservableCollection<ComingModelView> ComingEntries
         {
-            NewComing = new SimpleCommand((b) =>
-            {
-                if (Convert.ToBoolean(b))
-                    ShowWin.ShowNewComing();
-                else
-                    ShowWin.ShowNewComing(ComingEntries.CurrentItem as Coming);
-            });
-            ComingEntries = new CollectionView(Sql.GetTable<Coming>());
-            ApplyFilter = new SimpleCommand(() =>
-            {
-                ComingEntries.Filter = null;
-                ComingEntries.Filter = ComingFilter;
-            });
+            get {
+            if (StartDate == new DateTime()) StartDate = DateTime.MinValue;
+            if (EndDate == new DateTime()) EndDate = DateTime.MaxValue;
+            PageCount = (int)Math.Ceiling(_services.Comings.GetCount(StartDate, EndDate)/ (double)CountItemInPage);
+            return new ObservableCollection<ComingModelView>(_services.Comings.GetAll(StartDate, EndDate, (CurrentPage-1)*CountItemInPage, CountItemInPage));
         }
+    }
 
-        private bool ComingFilter(object obj)
+        private readonly ServicesManager _services;
+
+
+        public ComingViewModel(ServicesManager services)
         {
-            var coming = (obj as Coming);
-            if (coming == null)
-                return false;
-            if (StartDate != new DateTime())
-                if (coming.InvoiceDate < StartDate && coming.InvoiceDate > EndDate) return false;
-            return true;
+            _services = services;
+            CountItemInPage = 2;
         }
+        
     }
 }

@@ -13,7 +13,7 @@
     </UserControl.DataContext>
     <StackPanel>
         <StackPanel Orientation="Horizontal" Height="27">
-            <Button Content="+ Списание" Command="{Binding NewWriteoff}" CommandParameter="true" VerticalAlignment="Top" Background="#3F9213" Foreground="White" Padding="5"/>
+            <Button Content="+ Списание" Command="{Binding NewWriteoff}" VerticalAlignment="Top" Background="#3F9213" Foreground="White" Padding="5"/>
             <Grid Margin="10,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -37,17 +37,62 @@
                     <DatePicker x:Name="DtEnd" Padding="2,2,2,0" Width="95" SelectedDate="{Binding EndDate}"/>
                 </StackPanel>
             </Grid>
-            <Button Content="Применить" Command="{Binding ApplyFilter}"  VerticalAlignment="Top" Background="#337AB7" Foreground="White" Padding="5"/>
+            <Button Content="Применить" Command="{Binding Refresh}"  VerticalAlignment="Top" Background="#337AB7" Foreground="White" Padding="5"/>
         </StackPanel>
-        <DataGrid ItemsSource="{Binding WriteoffEntries}" HorizontalAlignment="Stretch" Margin="10,10,10,10" VerticalAlignment="Top"  AutoGenerateColumns="False" HorizontalGridLinesBrush="#FFC9C9C9" VerticalGridLinesBrush="#FFC9C9C9" SelectionMode="Single" CanUserDeleteRows="False" CanUserAddRows="False"  >
+        <ToolBar DockPanel.Dock="Top" Height="25">
+            <!--<Button Command="{Binding AddCommand}">
+                <Image Source="/Storage;component/Assets/002-add-square-button.png" ></Image>
+            </Button>
+            <Button  Command="{Binding AddCommand}" CommandParameter="{Binding SelectedItem, ElementName=dataGrid}">
+                <Image Source="/Storage;component/Assets/003-pen-on-square-of-paper-interface-symbol.png" ></Image>
+            </Button>
+            <Button  Command="{Binding DelCommand}" CommandParameter="{Binding SelectedItem, ElementName=dataGrid}">
+                <Image Source="/Storage;component/Assets/004-delete-button.png" ></Image>
+            </Button>-->
+            <Button  Command="{Binding FirstPageCommand}">
+                <Image Source="/Storage;component/Assets/first.png" ></Image>
+            </Button>
+            <Button  Command="{Binding PrevPageCommand}">
+                <Image Source="/Storage;component/Assets/prev.png" ></Image>
+            </Button>
+            <TextBlock VerticalAlignment="Center" Text="{Binding CurrentPage}"/>
+            <TextBlock  VerticalAlignment="Center" Text=" из "/>
+            <TextBlock  VerticalAlignment="Center" Text="{Binding PageCount}"/>
+            <Button  Command="{Binding NextPageCommand}">
+                <Image Source="/Storage;component/Assets/next.png" ></Image>
+            </Button>
+            <Button  Command="{Binding LastPageCommand}">
+                <Image Source="/Storage;component/Assets/last.png" ></Image>
+            </Button>
+            <ComboBox x:Name="CbItemsPerPage" SelectedIndex="0">
+                <commands:EventBindings.EventBindings>
+                    <commands:EventBindingCollection>
+                        <commands:EventBinding EventName="SelectionChanged" Command="{Binding SetItemsPerPage}" CommandParameter="{Binding SelectedValue.Content, ElementName=CbItemsPerPage}"/>
+                    </commands:EventBindingCollection>
+                </commands:EventBindings.EventBindings>
+                <ComboBoxItem Content="10"/>
+                <ComboBoxItem Content="20"/>
+                <ComboBoxItem Content="50"/>
+                <ComboBoxItem Content="100"/>
+            </ComboBox>
+            <Button  Command="{Binding Refresh}">
+                <Image Source="/Storage;component/Assets/refresh.png" ></Image>
+            </Button>
+            <!--<TextBox x:Name="TbFind" Text ="{Binding FindStr}"  MinWidth="100"/>
+            <Button Command="{Binding FindCommand}" CommandParameter="{Binding Text, ElementName=TbFind}">
+                <Image Source="/Storage;component/Assets/find.png" ></Image>
+            </Button>-->
+        </ToolBar>
+
+        <DataGrid x:Name="dataGrid" ItemsSource="{Binding WriteoffEntries}" HorizontalAlignment="Stretch" Margin="10,10,10,10" VerticalAlignment="Top"  AutoGenerateColumns="False" HorizontalGridLinesBrush="#FFC9C9C9" VerticalGridLinesBrush="#FFC9C9C9" SelectionMode="Single" CanUserDeleteRows="False" CanUserAddRows="False"  >
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding IdWriteoff}" ClipboardContentBinding="{x:Null}" Header="Списание №" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Id}" ClipboardContentBinding="{x:Null}" Header="Списание №" IsReadOnly="True"/>
                 <DataGridTextColumn Binding="{Binding Date, StringFormat=d, ConverterCulture=ru-RU}" ClipboardContentBinding="{x:Null}" Header="Дата" IsReadOnly="True"/>
                 <DataGridTextColumn Binding="{Binding Comment}" ClipboardContentBinding="{x:Null}" Header="Комментарий" IsReadOnly="True"/>
             </DataGrid.Columns>
             <commands:EventBindings.EventBindings>
                 <commands:EventBindingCollection>
-                    <commands:EventBinding EventName="MouseDoubleClick" Command="{Binding NewWriteoff}" CommandParameter="false"/>
+                    <commands:EventBinding EventName="MouseDoubleClick" Command="{Binding NewWriteoff}" CommandParameter="{Binding SelectedItem, ElementName=dataGrid}" />
                 </commands:EventBindingCollection>
             </commands:EventBindings.EventBindings>
         </DataGrid>

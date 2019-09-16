@@ -4,15 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Storage.View"
-             xmlns:viewModel="clr-namespace:Storage.ViewModel" xmlns:Model="clr-namespace:Storage.Model" x:Class="Storage.View.NewComingView"
+             xmlns:viewModel="clr-namespace:Storage.ViewModel" x:Class="Storage.View.NewComingView"
              mc:Ignorable="d" 
               d:DesignWidth="300">
-    <UserControl.Resources>
-        <Model:IdToProductConverter x:Key="IdToProductConverter"/>
-    </UserControl.Resources>
-    <UserControl.DataContext>
-        <viewModel:NewComingViewModel/>
-    </UserControl.DataContext>
     <StackPanel Margin="5">
         <Label Content="Поставщик"/>
         <Grid>
@@ -20,7 +14,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="20"/>
             </Grid.ColumnDefinitions>
-            <ComboBox ItemsSource="{Binding ProviderEntries}" Text="{Binding Provider}" IsEditable="True" IsSynchronizedWithCurrentItem="False"/>
+            <ComboBox ItemsSource="{Binding ProviderEntries}" Text="{Binding Coming.Provider}" IsEditable="True" IsSynchronizedWithCurrentItem="False"/>
             <Button Content="+" Grid.Column="1" ToolTip="Добавить новго поставщика" Command="{Binding NewProvider}" />
         </Grid>
         <Label Content="Накладная"/>
@@ -38,15 +32,15 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="20"/>
             </Grid.ColumnDefinitions>
-            <ComboBox ItemsSource="{Binding ProductEntries}" DisplayMemberPath="ProductName" Grid.Column="0" IsEditable="True" />
+            <ComboBox ItemsSource="{Binding ProductEntries}" DisplayMemberPath="ProductName" SelectedItem="{Binding ProductCount.Product}" Grid.Column="0" IsEditable="True" />
             <Button Content="+" Grid.Column="1" ToolTip="Добавить новый товар" Command="{Binding NewProduct}"/>
         </Grid>
         <Label Content="Количество"/>
-        <TextBox Text="{Binding ComingProduct.Count}"/>
+        <TextBox Text="{Binding ProductCount.Count, UpdateSourceTrigger=PropertyChanged}"/>
         <Button Content="+ Добавить товар" Command="{Binding AddProduct}" Margin="0,10"/>
-        <DataGrid ItemsSource="{Binding ProductCount}" HorizontalAlignment="Stretch" Margin="10,0,10,10" VerticalAlignment="Top"  AutoGenerateColumns="False" HorizontalGridLinesBrush="#FFC9C9C9" VerticalGridLinesBrush="#FFC9C9C9" SelectionMode="Single" CanUserAddRows="False" >
+        <DataGrid ItemsSource="{Binding ProductCounts}" HorizontalAlignment="Stretch" Margin="10,0,10,10" VerticalAlignment="Top"  AutoGenerateColumns="False" HorizontalGridLinesBrush="#FFC9C9C9" VerticalGridLinesBrush="#FFC9C9C9" SelectionMode="Single" CanUserAddRows="False" >
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding IdProduct, Converter={StaticResource IdToProductConverter}}" ClipboardContentBinding="{x:Null}" Header="Товар" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Product.ProductName}" ClipboardContentBinding="{x:Null}" Header="Товар" IsReadOnly="True"/>
                 <DataGridTextColumn Binding="{Binding Count}" ClipboardContentBinding="{x:Null}" Header="Количество" IsReadOnly="True"/>
             </DataGrid.Columns>
         </DataGrid>
